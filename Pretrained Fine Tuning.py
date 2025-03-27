@@ -19,11 +19,12 @@ import json
 ################################################################################
 import torchvision.models as models                                                                                                            
 import timm
-def get_model(config):
+
+def get_model(config): #import model
     model = timm.create_model(
-        'convnext_small.fb_in22k_ft_in1k',
+        'convnext_small.fb_in22k_ft_in1k', # ConvNeXt image classification model. Pretrained on ImageNet-22k and fine-tuned on ImageNet-1k (https://arxiv.org/abs/2201.03545)
         pretrained=True,
-        num_classes=100
+        num_classes=100 # Explicitly sets number of output classes to CIFAR-100 (100 classes).
     )
     return model
 
@@ -136,7 +137,7 @@ def main():
         transforms.ToTensor()
     ])
 
-    # Load dataset without normalization
+    # Load dataset without normalization to instantiate dynamic normalization (based on dataset ingested)
     temp_trainset = torchvision.datasets.CIFAR100(root=CONFIG["data_dir"], train=True,
                                                 download=True, transform=transform_temp)
     temp_loader = torch.utils.data.DataLoader(temp_trainset, batch_size=100, shuffle=False, num_workers=CONFIG["num_workers"])
@@ -160,12 +161,11 @@ def main():
 
     mean, std = compute_mean_std(temp_loader)
 
-
     #https://github.com/1Konny/gradcam_plus_plus-pytorch/issues/8 explained why we have to upsample to 224 with resnet 18...
     from torchvision.transforms import RandAugment, ColorJitter, GaussianBlur, RandomErasing
 
     transform_train = transforms.Compose([
-        transforms.Resize(224),
+        transforms.Resize(224), # needed to adapt 32 x 32 images for particular pretrained models
         transforms.RandomCrop(224, padding=16),
         transforms.RandomHorizontalFlip(),                         # Flip for invariance
         ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3),  # Color/light variation
@@ -230,7 +230,6 @@ def main():
         CONFIG["batch_size"] = optimal_batch_size
         print(f"Using batch size: {CONFIG['batch_size']}")
     
-
     ############################################################################
     # Loss Function, Optimizer and optional learning rate scheduler
     ############################################################################
@@ -246,7 +245,7 @@ def main():
     # --- Training Loop (Example - Students need to complete) ---
     ##########################################a##################################
     best_val_acc = 0.0
-    early_stopping_patience = 5  # Stop if no improvement for N epochs
+    early_stopping_patience = 5  # Stop if no improvement for 5 epochs
     early_stopping_counter = 0
     best_val_loss = float("inf")  # or use best_val_acc for accuracy-based stopping
 

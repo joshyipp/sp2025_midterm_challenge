@@ -7,7 +7,7 @@
 \usepackage{float}    % For table positioning
 
 \title{DS542 Midterm Report}
-\author{Josh Yip}
+\author{Josh Yip (Kaggle Username: joshyippie)}
 \date{March 2025}
 
 \begin{document}
@@ -19,23 +19,49 @@
 This project involved the use of publicly available pretrained models, large-scale datasets, and computational tools that leverage artificial intelligence (AI) and machine learning (ML). The following outlines how AI was utilized during the course of this project:
 
 \begin{itemize}
-    \item \textbf{Model Training Assistance:} Training techniques such as label smoothing, augmentation strategies (e.g., RandAugment, Gaussian Blur, RandomErasing), learning rate scheduling (OneCycleLR), and early stopping were used to enhance model performance and stability. These were informed by state-of-the-art deep learning practices.
+    \item Training techniques such as label smoothing, augmentation strategies (e.g., RandAugment, Gaussian Blur, RandomErasing), learning rate scheduling (OneCycleLR), and early stopping were used to enhance model performance and stability. These were informed by GPT as possible increasers for accuracy.
 
-    \item \textbf{Experiment Tracking:} \texttt{Weights \& Biases (wandb)} was used to record training metrics, visualize model performance and track hyperparameter choices.
+        \item Debugging PyTorch-related errors, including issues with installation, module loading, environment activation, and runtime exceptions (e.g., torchvision version compatibility, PyTorch GPU utilization).
+        \item Model architecture selection and recommendations (e.g., choosing ResNeXt50, modifying initial convolution layers for CIFAR-100 image sizes).
+        \item Hyperparameter tuning strategy advice (learning rates, optimizer settings, OneCycleLR scheduling).
+        \item Advanced data augmentation recommendations (RandAugment, Gaussian Blur, RandomErasing, ColorJitter).
+        \item Best practices for experiment tracking using \texttt{Weights \& Biases (wandb)}.
+        \item Documentation and report-writing suggestions (structuring LaTeX sections clearly, writing comprehensive disclosures and analysis sections).
+    \end{itemize}
 
-    \item \textbf{AI-Generated Guidance:} OpenAI’s ChatGPT (GPT-4) was consulted during:
+\subsection*{Explicit Breakdown of Code Authorship:}
+
+\begin{itemize}
+    \item \textbf{Written entirely by me:}
     \begin{itemize}
-        \item \textbf{Debugging and Troubleshooting:} Clarifying PyTorch errors, tracing stack traces, and resolving inconsistencies in model initialization, data loading, and training loop behavior.
-        \item \textbf{Model Design Decisions:} Recommending architectural modifications to pretrained models (e.g., adjusting initial convolution layers, freezing specific blocks, and modifying classifier heads) to adapt to CIFAR-100’s input format and size constraints.
-        \item \textbf{Training and Optimization Strategy:} Suggesting best practices like OneCycleLR scheduling, label smoothing, and augmentation techniques (e.g., RandAugment, ColorJitter, RandomErasing), informed by recent deep learning literature and benchmarks.
-        \item \textbf{Code Refactoring and Best Practices:} Improving code readability, modularization, and clarity by identifying redundant or risky logic.
-        \item \textbf{Documentation and Report Writing:} Supporting the creation of structured LaTeX templates, AI ethics sections, performance summaries, ablation tables, and general formatting refinements.
+        \item Core training and validation loops (\texttt{train} and \texttt{validate} functions).
+        \item Data loading, pre-processing, and dynamic normalization logic.
+        \item Early stopping logic and checkpoint.      
+        \item Initial transformation steps (random cropping, resize, normalize).
     \end{itemize}
+    
+    \item \textbf{Written with partial AI assistance:}
+    \begin{itemize}
+        \item Selection and adaptation of the pretrained model (\texttt{get\_model} function).
+        \item Advanced augmentation pipeline setup (RandAugment, RandomErasing).
+        \item Hyperparameter tuning guidance (learning rate, epochs, optimizer choice, learning rate scheduler settings).
+        \item Troubleshooting PyTorch environment issues (import errors, CUDA settings, cluster environment management).
     \end{itemize}
-    All AI-generated suggestions were reviewed and refined before being integrated.
 
-    \item \textbf{Ethical and Fair Use:} No confidential, proprietary, or sensitive data was used. All third-party models, datasets, and APIs were used in accordance with their respective licenses.
+    \item \textbf{Directly AI-suggested improvements:}
+    \begin{itemize}
+        \item LaTeX document structuring, including detailed AI disclosure, design justification, results analysis, and ablation sections.
+        \item Suggested clarifications for training progress interpretation (accuracy expectations, early stopping recommendations).
+    \end{itemize}
 \end{itemize}
+
+\subsection*{Code Commenting and Documentation:}
+\begin{itemize}
+    \item All sections of the provided Python code contain clear, detailed comments describing their explicit purposes, as can be seen directly within the code files.
+    \item Comments written by me explicitly indicate what each function and line does clearly, as recommended by GPT-4 to enhance readability.
+\end{itemize}
+    \textbf{Ethical and Fair Use:} No confidential, proprietary, or sensitive data was used. All third-party models, datasets, and APIs were used in accordance with their respective licenses.
+
 
 \vspace{1em}
 AI support contributed to rapid iteration, improved model interpretability, and enhanced documentation quality.
@@ -44,47 +70,44 @@ AI support contributed to rapid iteration, improved model interpretability, and 
 
 This report presents a series of experiments conducted on the CIFAR-100 image classification dataset. The goal was to progressively improve test accuracy using architectural enhancements, data augmentation, optimization techniques, and transfer learning.
 
-\section*{2. Results and Observations}
+\section*{2. Observations and Analysis of Results}
 
 \subsection*{2.1 Baseline (Simple CNN + SGD)}
 \begin{itemize}
     \item \textbf{Optimizer:} SGD (learning rate = 0.001)
     \item \textbf{Test Accuracy:} 27.96\%
+
 \end{itemize}
 
 \subsection*{2.2 Simple CNN + Adam}
 \begin{itemize}
     \item \textbf{Optimizer:} Adam (learning rate = 1e-3)
     \item \textbf{Test Accuracy:} 40.44\%
-    \item Faster generalization and better performance without tuning.
+    \item \textbf{Analysis:}  The initial simple CNN model established baseline performance. Switching from SGD to Adam resulted in substantial accuracy improvements (27.96\% to 40.44\%), highlighting the importance of adaptive optimization in early training stages.
+
 \end{itemize}
 
-\subsection*{2.3 Dynamic Normalization}
-\begin{itemize}
-    \item Normalizing using CIFAR-100 dataset-specific mean and standard deviation led to more stable training and better performance than using generic $(0.5, 0.5, 0.5)$.
-\end{itemize}
-
-\subsection*{2.4 ResNet18 (Pretrained, Frozen)}
+\subsection*{2.3 ResNet18 (Pretrained, Frozen)}
 \begin{itemize}
     \item \textbf{Test Accuracy:} 44.57\%
     \item Even without fine-tuning, pretrained models showed improved performance over scratch models.
 \end{itemize}
 
-\subsection*{2.5 ResNet18 + Augmentation}
+\subsection*{2.4 ResNet18 + Augmentation}
 \begin{itemize}
     \item \textbf{Epochs:} 5
     \item \textbf{Test Accuracy:} 55.32\%
     \item Stronger augmentation boosted generalization significantly.
 \end{itemize}
 
-\subsection*{2.6 DenseNet121 + Augmentation + Adam}
+\subsection*{2.5 DenseNet121 + Augmentation + Adam}
 \begin{itemize}
     \item \textbf{Epochs:} 10
     \item \textbf{Test Accuracy:} 76.00\%
     \item DenseNet provided better representational power and convergence.
 \end{itemize}
 
-\subsection*{2.7 ResNeXt50\_32x4d + Label Smoothing + Advanced Augmentation}
+\subsection*{2.6 ResNeXt50\_32x4d + Label Smoothing + Advanced Augmentation}
 \begin{itemize}
     \item \textbf{Epochs:} 50
     \item \textbf{Local Test Accuracy:} 82.71\%
@@ -118,8 +141,9 @@ This section outlines the rationale behind the final configuration used in the m
 \subsection*{4.1 Model Architecture: ResNeXt50\_32x4d}
 \begin{itemize}
     \item \textbf{Why ResNeXt?} ResNeXt50\_32x4d is a powerful extension of ResNet that employs grouped convolutions to increase model capacity without significant computational overhead.
+    \item \textbf{Dynamic Normalization:} Normalizing using CIFAR-100 dataset-specific mean and standard deviation led to more stable training and better performance than using generic $(0.5, 0.5, 0.5)$.
     \item \textbf{Pretraining Benefits:} The model was initialized with \texttt{ImageNet1K\_V1} pretrained weights to leverage transfer learning, which significantly boosts generalization performance on small datasets like CIFAR-100.
-    \item \textbf{Input Resolution Compatibility:} CIFAR-100 uses 32x32 images, so the first convolution layer (originally designed for larger inputs) was modified with kernel size 3 and stride 1. Additionally, the aggressive downsampling via max-pooling was removed to preserve spatial details.
+    \item \textbf{Input Resolution Compatibility:} CIFAR-100 uses 32x32 images, so the first convolution layer (originally designed for larger inputs) was modified with kernel size 3 and stride 1. Additionally, the aggressive downsampling via max-pooling was removed to preserve spatial details. Considered upscaling, but believed accuracy impact vs training time wasn't ideal for upscaling over freezing pooling layer.
     \item \textbf{Classifier Adaptation:} The final fully connected layer was replaced with a new head projecting to 100 classes.
 \end{itemize}
 
@@ -141,12 +165,12 @@ This section outlines the rationale behind the final configuration used in the m
     \item \textbf{Optimizer:} SGD with momentum ($0.8$) and weight decay to promote generalization and stability.
     \item \textbf{Learning Rate Scheduler:} OneCycleLR was selected to allow for an aggressive warm-up and decay, which improves convergence speed and test performance.
     \item \textbf{Loss Function:} CrossEntropyLoss with label smoothing ($0.05$) helps prevent overconfidence and improves calibration.
-    \item \textbf{Early Stopping:} A patience of 5 epochs was chosen to terminate training when validation loss ceased improving, saving computation and reducing overfitting.
+    \item \textbf{Early Stopping:} A patience of 50 epochs with early stoppage was chosen, saving computation and reducing overfitting in cases of unproductive epochs.
 \end{itemize}
 
 \subsection*{4.4 Experiment Management}
 \begin{itemize}
-    \item \textbf{Tracking:} \texttt{Weights \& Biases (wandb)} was used to log accuracy, loss, and learning rate in real-time, enabling rapid debugging and model comparison.
+    \item \textbf{Tracking:} \texttt{Weights \& Biases (wandb)} was used to log accuracy, loss, and learning rate in real-time, enabled rapid debugging and model comparison.
     \item \textbf{Reproducibility:} A fixed seed ($42$) was set, and all models were saved conditionally based on validation performance.
 \end{itemize}
 
