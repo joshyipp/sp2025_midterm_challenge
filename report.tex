@@ -1,0 +1,158 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{hyperref} % For hyperlinks
+\usepackage{amsmath}  % For math symbols
+\usepackage{booktabs} % For nicer tables
+\usepackage{caption}  % Better caption formatting
+\usepackage{float}    % For table positioning
+
+\title{DS542 Midterm Report}
+\author{Josh Yip}
+\date{March 2025}
+
+\begin{document}
+
+\maketitle
+
+\section*{AI Disclosure Statement}
+
+This project involved the use of publicly available pretrained models, large-scale datasets, and computational tools that leverage artificial intelligence (AI) and machine learning (ML). The following outlines how AI was utilized during the course of this project:
+
+\begin{itemize}
+    \item \textbf{Model Training Assistance:} Training techniques such as label smoothing, augmentation strategies (e.g., RandAugment, Gaussian Blur, RandomErasing), learning rate scheduling (OneCycleLR), and early stopping were used to enhance model performance and stability. These were informed by state-of-the-art deep learning practices.
+
+    \item \textbf{Experiment Tracking:} \texttt{Weights \& Biases (wandb)} was used to record training metrics, visualize model performance and track hyperparameter choices.
+
+    \item \textbf{AI-Generated Guidance:} OpenAI’s ChatGPT (GPT-4) was consulted during:
+    \begin{itemize}
+        \item \textbf{Debugging and Troubleshooting:} Clarifying PyTorch errors, tracing stack traces, and resolving inconsistencies in model initialization, data loading, and training loop behavior.
+        \item \textbf{Model Design Decisions:} Recommending architectural modifications to pretrained models (e.g., adjusting initial convolution layers, freezing specific blocks, and modifying classifier heads) to adapt to CIFAR-100’s input format and size constraints.
+        \item \textbf{Training and Optimization Strategy:} Suggesting best practices like OneCycleLR scheduling, label smoothing, and augmentation techniques (e.g., RandAugment, ColorJitter, RandomErasing), informed by recent deep learning literature and benchmarks.
+        \item \textbf{Code Refactoring and Best Practices:} Improving code readability, modularization, and clarity by identifying redundant or risky logic.
+        \item \textbf{Documentation and Report Writing:} Supporting the creation of structured LaTeX templates, AI ethics sections, performance summaries, ablation tables, and general formatting refinements.
+    \end{itemize}
+    \end{itemize}
+    All AI-generated suggestions were reviewed and refined before being integrated.
+
+    \item \textbf{Ethical and Fair Use:} No confidential, proprietary, or sensitive data was used. All third-party models, datasets, and APIs were used in accordance with their respective licenses.
+\end{itemize}
+
+\vspace{1em}
+AI support contributed to rapid iteration, improved model interpretability, and enhanced documentation quality.
+
+\section*{1. Experimental Overview}
+
+This report presents a series of experiments conducted on the CIFAR-100 image classification dataset. The goal was to progressively improve test accuracy using architectural enhancements, data augmentation, optimization techniques, and transfer learning.
+
+\section*{2. Results and Observations}
+
+\subsection*{2.1 Baseline (Simple CNN + SGD)}
+\begin{itemize}
+    \item \textbf{Optimizer:} SGD (learning rate = 0.001)
+    \item \textbf{Test Accuracy:} 27.96\%
+\end{itemize}
+
+\subsection*{2.2 Simple CNN + Adam}
+\begin{itemize}
+    \item \textbf{Optimizer:} Adam (learning rate = 1e-3)
+    \item \textbf{Test Accuracy:} 40.44\%
+    \item Faster generalization and better performance without tuning.
+\end{itemize}
+
+\subsection*{2.3 Dynamic Normalization}
+\begin{itemize}
+    \item Normalizing using CIFAR-100 dataset-specific mean and standard deviation led to more stable training and better performance than using generic $(0.5, 0.5, 0.5)$.
+\end{itemize}
+
+\subsection*{2.4 ResNet18 (Pretrained, Frozen)}
+\begin{itemize}
+    \item \textbf{Test Accuracy:} 44.57\%
+    \item Even without fine-tuning, pretrained models showed improved performance over scratch models.
+\end{itemize}
+
+\subsection*{2.5 ResNet18 + Augmentation}
+\begin{itemize}
+    \item \textbf{Epochs:} 5
+    \item \textbf{Test Accuracy:} 55.32\%
+    \item Stronger augmentation boosted generalization significantly.
+\end{itemize}
+
+\subsection*{2.6 DenseNet121 + Augmentation + Adam}
+\begin{itemize}
+    \item \textbf{Epochs:} 10
+    \item \textbf{Test Accuracy:} 76.00\%
+    \item DenseNet provided better representational power and convergence.
+\end{itemize}
+
+\subsection*{2.7 ResNeXt50\_32x4d + Label Smoothing + Advanced Augmentation}
+\begin{itemize}
+    \item \textbf{Epochs:} 50
+    \item \textbf{Local Test Accuracy:} 82.71\%
+    \item \textbf{Leaderboard Submission Accuracy:} 54.48\%
+    \item Achieved the highest test accuracy locally; however, performance dropped on final submission, likely due to domain shift or overfitting to local validation.
+\end{itemize}
+
+\section*{3. Ablation Study}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}|l|c|@{}}
+\hline
+\textbf{Model Variant} & \textbf{CIFAR-100 Test Accuracy} \\
+\hline
+Simple CNN + SGD & 27.96\% \\
+Simple CNN + Adam & 40.44\% \\
+ResNet18 (pretrained, frozen) & 44.57\% \\
+ResNet18 + Aug + Dynamic Norm & 55.32\% \\
+DenseNet121 + Adam + 10 Epochs & 76.00\% \\
+ResNeXt50\_32x4d + Aug + Smoothing & \textbf{82.71\%} \\
+\hline
+\end{tabular}
+\caption{Comparison of model variants and their corresponding performance on CIFAR-100.}
+\end{table}
+
+\section*{4. Design Justification}
+
+This section outlines the rationale behind the final configuration used in the model pipeline for CIFAR-100 classification.
+
+\subsection*{4.1 Model Architecture: ResNeXt50\_32x4d}
+\begin{itemize}
+    \item \textbf{Why ResNeXt?} ResNeXt50\_32x4d is a powerful extension of ResNet that employs grouped convolutions to increase model capacity without significant computational overhead.
+    \item \textbf{Pretraining Benefits:} The model was initialized with \texttt{ImageNet1K\_V1} pretrained weights to leverage transfer learning, which significantly boosts generalization performance on small datasets like CIFAR-100.
+    \item \textbf{Input Resolution Compatibility:} CIFAR-100 uses 32x32 images, so the first convolution layer (originally designed for larger inputs) was modified with kernel size 3 and stride 1. Additionally, the aggressive downsampling via max-pooling was removed to preserve spatial details.
+    \item \textbf{Classifier Adaptation:} The final fully connected layer was replaced with a new head projecting to 100 classes.
+\end{itemize}
+
+\subsection*{4.2 Data Augmentation Strategy}
+\begin{itemize}
+    \item \textbf{Purpose:} Improve model robustness and generalization to unseen variations by simulating distortions during training.
+    \item \textbf{Techniques Used:}
+    \begin{itemize}
+        \item \textbf{Random Crop \& Horizontal Flip} — Standard spatial augmentations for image recognition tasks.
+        \item \textbf{ColorJitter} — Simulates lighting variation.
+        \item \textbf{Gaussian Blur \& RandomErasing} — Encourage spatial and texture invariance.
+        \item \textbf{RandAugment} — Plug-and-play policy to introduce strong randomized augmentations.
+    \end{itemize}
+    \item \textbf{Validation \& Test Sets:} No augmentation was applied to these sets to ensure fair performance evaluation.
+\end{itemize}
+
+\subsection*{4.3 Training Configuration}
+\begin{itemize}
+    \item \textbf{Optimizer:} SGD with momentum ($0.8$) and weight decay to promote generalization and stability.
+    \item \textbf{Learning Rate Scheduler:} OneCycleLR was selected to allow for an aggressive warm-up and decay, which improves convergence speed and test performance.
+    \item \textbf{Loss Function:} CrossEntropyLoss with label smoothing ($0.05$) helps prevent overconfidence and improves calibration.
+    \item \textbf{Early Stopping:} A patience of 5 epochs was chosen to terminate training when validation loss ceased improving, saving computation and reducing overfitting.
+\end{itemize}
+
+\subsection*{4.4 Experiment Management}
+\begin{itemize}
+    \item \textbf{Tracking:} \texttt{Weights \& Biases (wandb)} was used to log accuracy, loss, and learning rate in real-time, enabling rapid debugging and model comparison.
+    \item \textbf{Reproducibility:} A fixed seed ($42$) was set, and all models were saved conditionally based on validation performance.
+\end{itemize}
+
+
+\section*{5. Conclusion}
+
+Each successive experiment demonstrated incremental improvements through better architecture choices, transfer learning, augmentation, and optimization techniques. The final model, ResNeXt50\_32x4d, achieved the best performance locally, though further tuning and regularization are necessary to bridge the gap between local and public leaderboard results.
+
+\end{document}
