@@ -591,20 +591,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-    # --- Evaluation on Clean CIFAR-100 Test Set ---
-    predictions, clean_accuracy = eval_cifar100.evaluate_cifar100_test(model, testloader, CONFIG["device"])
-    print(f"Clean CIFAR-100 Test Accuracy: {clean_accuracy:.2f}%")
-
-    # --- Evaluation on OOD ---
-    all_predictions = eval_ood.evaluate_ood_test(model, CONFIG)
-
-    # --- Create Submission File (OOD) ---
-    submission_df_ood = eval_ood.create_ood_df(all_predictions)
-    submission_df_ood.to_csv("submission_ood.csv", index=False)
-    print("submission_ood.csv created successfully.")
-
-if __name__ == '__main__':
-    main()
-
