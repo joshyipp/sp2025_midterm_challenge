@@ -20,12 +20,10 @@ import json
 import torchvision.models as models                                                                                                            
 import timm
 
-def get_model(config): #import model
-    model = timm.create_model(
-        'convnext_small.fb_in22k_ft_in1k', # ConvNeXt image classification model. Pretrained on ImageNet-22k and fine-tuned on ImageNet-1k (https://arxiv.org/abs/2201.03545)
-        pretrained=True,
-        num_classes=100 # Explicitly sets number of output classes to CIFAR-100 (100 classes).
-    )
+def get_model(config):
+    model = models.densenet121(pretrained=True)  # Load pretrained on ImageNet
+    num_features = model.classifier.in_features   # Get input features of classifier
+    model.classifier = nn.Linear(num_features, 100)  # Adapt to CIFAR-100 (100 classes)
     return model
 
 def train(epoch, model, trainloader, optimizer, criterion, CONFIG):
@@ -112,7 +110,7 @@ def main():
     # It's also convenient to pass to our experiment tracking tool.
 
     CONFIG = {
-        "model": "efficientnet-pretrained",   # Change name when using a different model
+        "model": "densenet121-pretrained",   # Change name when using a different model
         "batch_size": 64, # run batch size finder to find optimal batch size (i don't think the default value is ever used...)
         "learning_rate": 1e-5,
         "epochs": 50,  # Train for longer in a real scenario #10 was fine
